@@ -2,11 +2,17 @@
 
 Đây là phiên bản thử nghiệm đầu tiên của một trình đọc màn hình viết mới bằng Java, không dùng lõi TalkBack. Mục tiêu là kiểm soát rõ ràng luồng khởi động, màn hình cài đặt và tương thích Android 10.
 
-## Phiên bản 0.1.0
+## Phiên bản 0.2.0
 
-Bản đầu tiên cung cấp `AccessibilityService`, TTS của hệ thống, đọc các mục giao diện khi nhận sự kiện accessibility, hành động quay lại/trang chủ/ứng dụng gần đây, và màn hình cài đặt riêng. Đây là nền móng để bổ sung dần điều hướng trái/phải, chạm khám phá, nhấn hai lần và earcon.
+Bản 0.2 cung cấp `AccessibilityService`, TTS hệ thống, đọc nhãn và trạng thái cơ bản của mục giao diện, điều hướng trái/phải, cuộn lên/xuống, chạm khám phá, nhấn hai lần để gọi nút đang được khám phá, và phản hồi earcon cho focus, cử chỉ vuốt, kích hoạt và lỗi. Earcon dùng `ToneGenerator` của Android nên không cần tải thêm tệp âm thanh.
 
 Không nên coi bản 0.1.0 là bản thay thế hoàn chỉnh TalkBack. Trình đọc màn hình hoàn chỉnh cần xử lý rất nhiều loại cây giao diện và thiết bị.
+
+## Cử chỉ và phản hồi
+
+Khi dịch vụ được bật, vuốt trái/phải sẽ chuyển accessibility focus giữa các mục. Vuốt lên/xuống sẽ yêu cầu cuộn vùng đang focus. Đưa ngón tay qua mục sẽ đọc nhãn và phát earcon focus; nhấn hai lần trên mục đang được khám phá sẽ gọi `ACTION_CLICK` và phát earcon kích hoạt.
+
+Đây vẫn là bản độc lập đang phát triển. Một số ứng dụng tùy biến hoặc canvas không cung cấp đủ `AccessibilityNodeInfo`, vì vậy có thể chưa hỗ trợ tốt như TalkBack.
 
 ## Cài đặt và bật
 
