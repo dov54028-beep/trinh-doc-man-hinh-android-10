@@ -11,6 +11,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public class MainActivity extends Activity {
+    private static final int CURRENT_VERSION_CODE = 3;
     private TextView status;
     private TextView updateStatus;
     private Button downloadUpdate;
@@ -59,7 +60,7 @@ public class MainActivity extends Activity {
                 updateStatus.setText(getString(R.string.update_unavailable));
                 return;
             }
-            if (info.versionCode > BuildConfig.VERSION_CODE && info.downloadUrl.length() > 0) {
+            if (info.versionCode > CURRENT_VERSION_CODE && info.downloadUrl.length() > 0) {
                 updateStatus.setText(getString(R.string.update_available, info.versionName));
                 downloadUpdate.setText(getString(R.string.update_available, info.versionName));
                 downloadUpdate.setVisibility(View.VISIBLE);
