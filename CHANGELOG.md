@@ -1,5 +1,13 @@
 # Nhật ký thay đổi
 
+## 0.3.0 - Củng cố lõi và kiểm tra cập nhật
+
+- Bảo vệ vòng đời `AccessibilityNodeInfo`, tránh recycle trùng và recycle kết quả `focusSearch()` đúng cách.
+- Củng cố xử lý đổi cửa sổ, focus accessibility, vùng cuộn và fallback sắp xếp theo vị trí màn hình.
+- Thêm kiểm tra bản cập nhật ReaderHub qua HTTPS/JSON ở chế độ nền và nút mở liên kết APK khi có bản mới.
+- Bổ sung quyền Internet tối thiểu và giữ máy chủ cập nhật có thể cấu hình bằng resource.
+- Cải thiện mô tả cử chỉ: vuốt trái là mục trước, vuốt phải là mục tiếp theo.
+
 ## 0.1.0 - Phiên bản nền móng
 
 - Khởi tạo repository độc lập, không dùng lõi TalkBack.

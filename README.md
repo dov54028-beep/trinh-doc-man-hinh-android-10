@@ -2,9 +2,9 @@
 
 Đây là phiên bản thử nghiệm đầu tiên của một trình đọc màn hình viết mới bằng Java, không dùng lõi TalkBack. Mục tiêu là kiểm soát rõ ràng luồng khởi động, màn hình cài đặt và tương thích Android 10.
 
-## Phiên bản 0.2.0
+## Phiên bản 0.3.0
 
-Bản 0.2 cung cấp `AccessibilityService`, TTS hệ thống, đọc nhãn và trạng thái cơ bản của mục giao diện, điều hướng trái/phải, cuộn lên/xuống, chạm khám phá, nhấn hai lần để gọi nút đang được khám phá, và phản hồi earcon cho focus, cử chỉ vuốt, kích hoạt và lỗi. Earcon dùng `ToneGenerator` của Android nên không cần tải thêm tệp âm thanh.
+Bản 0.3 tiếp tục lõi độc lập, củng cố vòng đời node cho Android 10, bảo vệ recycle node, bổ sung fallback điều hướng theo vị trí màn hình, xử lý biên danh sách và kiểm tra bản cập nhật online. Bản 0.2 cung cấp TTS hệ thống, đọc nhãn/trạng thái, điều hướng trái/phải, cuộn lên/xuống, chạm khám phá, nhấn hai lần và earcon.
 
 Không nên coi bản 0.1.0 là bản thay thế hoàn chỉnh TalkBack. Trình đọc màn hình hoàn chỉnh cần xử lý rất nhiều loại cây giao diện và thiết bị.
 
@@ -12,7 +12,13 @@ Không nên coi bản 0.1.0 là bản thay thế hoàn chỉnh TalkBack. Trình 
 
 Khi dịch vụ được bật, vuốt trái/phải sẽ chuyển accessibility focus giữa các mục. Vuốt lên/xuống sẽ yêu cầu cuộn vùng đang focus. Đưa ngón tay qua mục sẽ đọc nhãn và phát earcon focus; nhấn hai lần trên mục đang được khám phá sẽ gọi `ACTION_CLICK` và phát earcon kích hoạt.
 
-Đây vẫn là bản độc lập đang phát triển. Một số ứng dụng tùy biến hoặc canvas không cung cấp đủ `AccessibilityNodeInfo`, vì vậy có thể chưa hỗ trợ tốt như TalkBack.
+Vuốt trái là mục trước; vuốt phải là mục tiếp theo. Vuốt lên yêu cầu cuộn xuống và vuốt xuống yêu cầu cuộn lên. Khi `focusSearch()` của ứng dụng không hoạt động, service thu thập mục nhìn thấy, sắp xếp theo tọa độ trên màn hình và dùng đó làm đường dự phòng.
+
+Đây vẫn là bản độc lập đang phát triển. Ứng dụng tùy biến, game canvas hoặc giao diện không cung cấp `AccessibilityNodeInfo` có thể cần bộ thích nghi riêng.
+
+## Ý tưởng đã tự chọn cho các bản sau
+
+Các hướng mở rộng hợp lý là bộ điều hướng theo vai trò (nút, tiêu đề, liên kết, ô nhập), đọc trạng thái tiến độ và thông báo ngắn, lịch sử focus để quay lại mục vừa đọc, chế độ đọc liên tục có dừng bằng chạm, bộ lọc thông báo theo ứng dụng, thao tác tùy biến trong màn hình cài đặt và báo cáo lỗi ẩn danh chỉ khi người dùng chủ động bật. Những tính năng này sẽ được thêm sau khi nền cử chỉ ổn định; không coi chúng là đã hoàn thành trong 0.3.
 
 ## Cài đặt và bật
 

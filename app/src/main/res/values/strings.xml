@@ -11,5 +11,10 @@
     <string name="home">Trang chủ</string>
     <string name="recents">Ứng dụng gần đây</string>
     <string name="settings_title">Cài đặt trình đọc màn hình</string>
-    <string name="settings_info">Phiên bản 0.1.0 là nền móng độc lập. Các cử chỉ trái/phải, chạm khám phá và earcon sẽ được bổ sung từng bước.</string>
+    <string name="settings_info">Phiên bản độc lập đang phát triển. Vuốt trái về mục trước, vuốt phải tới mục tiếp theo; chạm khám phá và nhấn hai lần để kích hoạt.</string>
+    <string name="update_server_url"></string>
+    <string name="update_checking">Đang kiểm tra bản cập nhật…</string>
+    <string name="update_latest">Bạn đang dùng bản mới nhất.</string>
+    <string name="update_available">Có bản cập nhật %1$s.</string>
+    <string name="update_unavailable">Chưa kết nối được máy chủ cập nhật.</string>
 </resources>

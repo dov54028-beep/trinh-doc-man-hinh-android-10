@@ -2,22 +2,25 @@ package com.vuong.reader;
 
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
+import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Looper;
 import android.speech.tts.TextToSpeech;
 import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
-import android.graphics.Rect;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
-/** Independent Android 10 screen reader core for the 0.2 milestone. */
+/** Independent Android 10 screen reader core with defensive node handling. */
 public class ScreenReaderService extends AccessibilityService {
     private static final long DOUBLE_TAP_MS = 450L;
+    private static final long NAVIGATION_SCROLL_DELAY_MS = 350L;
     private static ScreenReaderService instance;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private TextToSpeech tts;
@@ -36,25 +39,33 @@ public class ScreenReaderService extends AccessibilityService {
         info.flags |= AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS;
         info.flags |= AccessibilityServiceInfo.FLAG_REQUEST_TOUCH_EXPLORATION_MODE;
         info.flags |= AccessibilityServiceInfo.FLAG_REPORT_VIEW_IDS;
-        info.notificationTimeout = 60;
+        info.flags |= AccessibilityServiceInfo.FLAG_INCLUDE_NOT_IMPORTANT_VIEWS;
+        info.notificationTimeout = 80;
         setServiceInfo(info);
         sounds = new FeedbackSounds(this);
         tts = new TextToSpeech(this, status -> {
-            if (status == TextToSpeech.SUCCESS) tts.setLanguage(new Locale("vi", "VN"));
+            TextToSpeech engine = tts;
+            if (status == TextToSpeech.SUCCESS && engine != null) {
+                engine.setLanguage(new Locale("vi", "VN"));
+            }
         });
-        sounds.activate();
-        speak("Trình đọc màn hình phiên bản 0.2 đã bật");
+        playActivate();
+        speak("Trình đọc màn hình đã bật");
     }
 
     @Override public void onAccessibilityEvent(AccessibilityEvent event) {
         if (event == null) return;
         int type = event.getEventType();
+        if (type == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+            replaceHovered(null);
+            lastText = null;
+        }
         if (type == AccessibilityEvent.TYPE_VIEW_HOVER_ENTER) {
             handleHover(event);
             return;
         }
         if (type == AccessibilityEvent.TYPE_VIEW_CLICKED || type == AccessibilityEvent.TYPE_VIEW_LONG_CLICKED) {
-            sounds.activate();
+            playActivate();
         }
         CharSequence text = textFor(event);
         if (text != null && text.length() > 0 && shouldSpeak(text)) speak(text.toString());
@@ -63,39 +74,59 @@ public class ScreenReaderService extends AccessibilityService {
     private void handleHover(AccessibilityEvent event) {
         AccessibilityNodeInfo source = event.getSource();
         if (source == null) return;
-        long now = System.currentTimeMillis();
-        boolean secondTap = hoveredNode != null && now - lastHoverAt <= DOUBLE_TAP_MS
-                && sameNode(hoveredNode, source);
-        if (secondTap) {
-            if (source.isClickable() || source.isFocusable() || source.isLongClickable()) {
+        try {
+            long now = System.currentTimeMillis();
+            boolean secondTap = hoveredNode != null && now - lastHoverAt <= DOUBLE_TAP_MS
+                    && sameNode(hoveredNode, source);
+            if (secondTap && isActivatable(source)) {
                 if (source.performAction(AccessibilityNodeInfo.ACTION_CLICK)) {
-                    sounds.activate();
+                    playActivate();
                     speak("Đã kích hoạt");
-                } else sounds.error();
+                } else playError();
+                lastHoverAt = 0L;
+                replaceHovered(null);
+                return;
             }
-            lastHoverAt = 0;
-            replaceHovered(null);
-            return;
+            replaceHovered(AccessibilityNodeInfo.obtain(source));
+            lastHoverAt = now;
+            source.performAction(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS);
+            playFocus();
+            CharSequence text = label(source);
+            if (text != null && shouldSpeak(text)) speak(text.toString());
+        } finally {
+            source.recycle();
         }
-        replaceHovered(AccessibilityNodeInfo.obtain(source));
-        lastHoverAt = now;
-        source.performAction(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS);
-        sounds.focus();
-        CharSequence text = label(source);
-        if (text != null && shouldSpeak(text)) speak(text.toString());
+    }
+
+    private boolean isActivatable(AccessibilityNodeInfo node) {
+        return node.isClickable() || node.isFocusable() || node.isLongClickable()
+                || node.isCheckable() || node.isEditable();
     }
 
     private boolean sameNode(AccessibilityNodeInfo a, AccessibilityNodeInfo b) {
         if (a.getWindowId() != b.getWindowId()) return false;
-        if (a.getViewIdResourceName() != null && a.getViewIdResourceName().equals(b.getViewIdResourceName())) return true;
-        return a.getText() != null && a.getText().equals(b.getText()) && a.getClassName() != null
-                && a.getClassName().equals(b.getClassName());
+        Rect aBounds = new Rect();
+        Rect bBounds = new Rect();
+        a.getBoundsInScreen(aBounds);
+        b.getBoundsInScreen(bBounds);
+        if (!aBounds.equals(bBounds)) return false;
+        CharSequence aId = a.getViewIdResourceName();
+        CharSequence bId = b.getViewIdResourceName();
+        if (aId != null || bId != null) return aId != null && aId.equals(bId);
+        return equalText(a.getText(), b.getText()) && equalText(a.getContentDescription(), b.getContentDescription())
+                && equalText(a.getClassName(), b.getClassName());
+    }
+
+    private boolean equalText(CharSequence a, CharSequence b) {
+        return a == null ? b == null : a.equals(b);
     }
 
     private CharSequence textFor(AccessibilityEvent event) {
-        if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
-                || event.getEventType() == AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED
-                || event.getEventType() == AccessibilityEvent.TYPE_VIEW_CLICKED) {
+        int type = event.getEventType();
+        if (type == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
+                || type == AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED
+                || type == AccessibilityEvent.TYPE_VIEW_CLICKED
+                || type == AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED) {
             if (event.getContentDescription() != null) return event.getContentDescription();
             if (event.getText() != null && !event.getText().isEmpty()) return join(event);
         }
@@ -115,63 +146,96 @@ public class ScreenReaderService extends AccessibilityService {
 
     private boolean shouldSpeak(CharSequence text) {
         long now = System.currentTimeMillis();
-        boolean duplicate = text.equals(lastText) && now - lastSpokenAt < 500;
+        boolean duplicate = text.equals(lastText) && now - lastSpokenAt < 500L;
         if (!duplicate) { lastText = text; lastSpokenAt = now; }
         return !duplicate;
     }
 
     @Override public boolean onGesture(int gestureId) {
         if (gestureId == GESTURE_SWIPE_LEFT) {
-            sounds.swipe(); moveFocus(View.FOCUS_BACKWARD); return true;
+            playSwipe();
+            moveFocus(View.FOCUS_BACKWARD);
+            return true;
         }
         if (gestureId == GESTURE_SWIPE_RIGHT) {
-            sounds.swipe(); moveFocus(View.FOCUS_FORWARD); return true;
+            playSwipe();
+            moveFocus(View.FOCUS_FORWARD);
+            return true;
         }
-        if (gestureId == GESTURE_SWIPE_UP) { sounds.swipe(); scroll(true); return true; }
-        if (gestureId == GESTURE_SWIPE_DOWN) { sounds.swipe(); scroll(false); return true; }
+        if (gestureId == GESTURE_SWIPE_UP) {
+            playSwipe();
+            scroll(true);
+            return true;
+        }
+        if (gestureId == GESTURE_SWIPE_DOWN) {
+            playSwipe();
+            scroll(false);
+            return true;
+        }
         return super.onGesture(gestureId);
     }
 
     private void moveFocus(int direction) {
         AccessibilityNodeInfo root = getRootInActiveWindow();
-        if (root == null) { sounds.error(); return; }
-        AccessibilityNodeInfo current = root.findFocus(AccessibilityNodeInfo.FOCUS_ACCESSIBILITY);
+        if (root == null) { playError(); return; }
+        AccessibilityNodeInfo current = null;
         List<AccessibilityNodeInfo> nodes = new ArrayList<>();
-        collectReadableNodes(root, nodes, true);
-        Collections.sort(nodes, SCREEN_ORDER);
-
-        AccessibilityNodeInfo candidate = findOrderedCandidate(nodes, current, direction);
-        if (candidate == null) {
-            candidate = focusSearchFallback(root, current, direction);
+        try {
+            current = root.findFocus(AccessibilityNodeInfo.FOCUS_ACCESSIBILITY);
+            collectReadableNodes(root, nodes, true, new HashSet<String>());
+            Collections.sort(nodes, SCREEN_ORDER);
+            AccessibilityNodeInfo candidate = findOrderedCandidate(nodes, current, direction);
+            if (candidate == null) candidate = focusSearchFallback(root, current, direction);
+            if (candidate != null && focusAndSpeak(candidate)) {
+                // Candidate is recycled below after the action is complete.
+            } else if (!nodes.isEmpty()) {
+                scrollForMore(root, current, direction);
+            } else {
+                playError();
+                speak(direction == View.FOCUS_FORWARD ? "Không có mục tiếp theo" : "Không có mục trước");
+            }
+            if (candidate != null) {
+                boolean ownedByList = false;
+                for (AccessibilityNodeInfo node : nodes) if (node == candidate) { ownedByList = true; break; }
+                if (ownedByList) nodes.remove(candidate);
+                candidate.recycle();
+            }
+        } finally {
+            for (AccessibilityNodeInfo node : nodes) node.recycle();
+            if (current != null) current.recycle();
+            root.recycle();
         }
-        if (candidate != null && candidate.performAction(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS)) {
-            sounds.focus();
-            CharSequence candidateLabel = label(candidate);
-            if (candidateLabel != null) speak(candidateLabel.toString());
-        } else if (!nodes.isEmpty()) {
-            scrollForMore(root, current, direction);
-        } else sounds.error();
-
-        for (AccessibilityNodeInfo node : nodes) {
-            if (node != candidate) node.recycle();
-        }
-        if (candidate != null) candidate.recycle();
-        if (current != null) current.recycle();
-        root.recycle();
     }
 
-    private void collectReadableNodes(AccessibilityNodeInfo node, List<AccessibilityNodeInfo> result, boolean isRoot) {
+    private boolean focusAndSpeak(AccessibilityNodeInfo candidate) {
+        if (!candidate.performAction(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS)) return false;
+        playFocus();
+        CharSequence candidateLabel = label(candidate);
+        if (candidateLabel != null) speak(candidateLabel.toString());
+        return true;
+    }
+
+    private void collectReadableNodes(AccessibilityNodeInfo node, List<AccessibilityNodeInfo> result,
+                                      boolean isRoot, Set<String> seen) {
         if (node == null) return;
-        if (!isRoot && node.isVisibleToUser() && label(node) != null
-                && (node.isFocusable() || node.isClickable() || node.isCheckable()
-                || node.getClassName() != null)) {
-            result.add(AccessibilityNodeInfo.obtain(node));
+        if (!isRoot && node.isVisibleToUser()) {
+            CharSequence nodeLabel = label(node);
+            String key = nodeKey(node, nodeLabel);
+            if (nodeLabel != null && seen.add(key)) result.add(AccessibilityNodeInfo.obtain(node));
         }
         for (int i = 0; i < node.getChildCount(); i++) {
             AccessibilityNodeInfo child = node.getChild(i);
-            collectReadableNodes(child, result, false);
-            if (child != null) child.recycle();
+            if (child != null) {
+                collectReadableNodes(child, result, false, seen);
+                child.recycle();
+            }
         }
+    }
+
+    private String nodeKey(AccessibilityNodeInfo node, CharSequence nodeLabel) {
+        Rect bounds = new Rect();
+        node.getBoundsInScreen(bounds);
+        return node.getWindowId() + ":" + bounds.toShortString() + ":" + String.valueOf(nodeLabel);
     }
 
     private static final Comparator<AccessibilityNodeInfo> SCREEN_ORDER = (a, b) -> {
@@ -180,12 +244,12 @@ public class ScreenReaderService extends AccessibilityService {
         a.getBoundsInScreen(ra);
         b.getBoundsInScreen(rb);
         if (ra.top != rb.top) return Integer.compare(ra.top, rb.top);
-        return Integer.compare(ra.left, rb.left);
+        if (ra.left != rb.left) return Integer.compare(ra.left, rb.left);
+        return Integer.compare(ra.bottom, rb.bottom);
     };
 
     private AccessibilityNodeInfo findOrderedCandidate(List<AccessibilityNodeInfo> nodes,
-                                                        AccessibilityNodeInfo current,
-                                                        int direction) {
+                                                        AccessibilityNodeInfo current, int direction) {
         if (nodes.isEmpty()) return null;
         int currentIndex = -1;
         for (int i = 0; i < nodes.size(); i++) {
@@ -197,39 +261,59 @@ public class ScreenReaderService extends AccessibilityService {
     }
 
     private AccessibilityNodeInfo focusSearchFallback(AccessibilityNodeInfo root,
-                                                       AccessibilityNodeInfo current,
-                                                       int direction) {
+                                                       AccessibilityNodeInfo current, int direction) {
         AccessibilityNodeInfo base = current == null ? root : current;
         AccessibilityNodeInfo result = base.focusSearch(direction);
-        return result == null ? null : AccessibilityNodeInfo.obtain(result);
+        if (result == null) return null;
+        AccessibilityNodeInfo copy = AccessibilityNodeInfo.obtain(result);
+        result.recycle();
+        return copy;
     }
 
     private void scrollForMore(AccessibilityNodeInfo root, AccessibilityNodeInfo current, int direction) {
-        AccessibilityNodeInfo node = current == null ? root : current;
-        while (node != null && !node.isScrollable()) node = node.getParent();
+        AccessibilityNodeInfo start = current == null ? root : current;
+        AccessibilityNodeInfo scrollable = findScrollableAncestor(start);
         boolean forward = direction == View.FOCUS_FORWARD;
-        boolean scrolled = node != null && node.performAction(forward
+        boolean scrolled = scrollable != null && scrollable.performAction(forward
                 ? AccessibilityNodeInfo.ACTION_SCROLL_FORWARD : AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD);
+        if (scrollable != null) scrollable.recycle();
         if (scrolled) {
-            sounds.swipe();
-            handler.postDelayed(() -> moveFocus(direction), 350L);
+            playSwipe();
+            handler.postDelayed(() -> moveFocus(direction), NAVIGATION_SCROLL_DELAY_MS);
         } else {
-            sounds.error();
+            playError();
             speak(forward ? "Đã tới mục cuối" : "Đã tới mục đầu");
         }
     }
 
+    private AccessibilityNodeInfo findScrollableAncestor(AccessibilityNodeInfo start) {
+        AccessibilityNodeInfo cursor = AccessibilityNodeInfo.obtain(start);
+        while (cursor != null) {
+            if (cursor.isScrollable()) return cursor;
+            AccessibilityNodeInfo parent = cursor.getParent();
+            cursor.recycle();
+            cursor = parent;
+        }
+        return null;
+    }
+
     private void scroll(boolean forward) {
         AccessibilityNodeInfo root = getRootInActiveWindow();
-        if (root == null) { sounds.error(); return; }
-        AccessibilityNodeInfo focus = root.findFocus(AccessibilityNodeInfo.FOCUS_ACCESSIBILITY);
-        AccessibilityNodeInfo node = focus == null ? root : focus;
-        while (node != null && !node.isScrollable()) node = node.getParent();
-        boolean ok = node != null && node.performAction(forward
-                ? AccessibilityNodeInfo.ACTION_SCROLL_FORWARD : AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD);
-        if (ok) { sounds.swipe(); speak(forward ? "Cuộn xuống" : "Cuộn lên"); } else sounds.error();
-        if (focus != null) focus.recycle();
-        root.recycle();
+        if (root == null) { playError(); return; }
+        AccessibilityNodeInfo focus = null;
+        AccessibilityNodeInfo scrollable = null;
+        try {
+            focus = root.findFocus(AccessibilityNodeInfo.FOCUS_ACCESSIBILITY);
+            scrollable = findScrollableAncestor(focus == null ? root : focus);
+            boolean ok = scrollable != null && scrollable.performAction(forward
+                    ? AccessibilityNodeInfo.ACTION_SCROLL_FORWARD : AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD);
+            if (ok) speak(forward ? "Cuộn xuống" : "Cuộn lên");
+            else { playError(); speak("Không có vùng cuộn"); }
+        } finally {
+            if (scrollable != null) scrollable.recycle();
+            if (focus != null) focus.recycle();
+            root.recycle();
+        }
     }
 
     private CharSequence label(AccessibilityNodeInfo node) {
@@ -239,11 +323,13 @@ public class ScreenReaderService extends AccessibilityService {
             String cls = node.getClassName() == null ? "" : node.getClassName().toString();
             if (cls.contains("Button")) result = "Nút";
             else if (cls.contains("EditText")) result = "Ô nhập liệu";
+            else if (node.isCheckable()) result = "Mục chọn";
         }
-        if (result == null) return null;
-        if (node.isChecked()) result += ", đã chọn";
-        if (!node.isEnabled()) result += ", bị vô hiệu hóa";
-        return result;
+        if (result == null || result.length() == 0) return null;
+        StringBuilder output = new StringBuilder(result.toString());
+        if (node.isChecked()) output.append(", đã chọn");
+        if (!node.isEnabled()) output.append(", bị vô hiệu hóa");
+        return output.toString();
     }
 
     private void replaceHovered(AccessibilityNodeInfo replacement) {
@@ -251,9 +337,15 @@ public class ScreenReaderService extends AccessibilityService {
         hoveredNode = replacement;
     }
 
-    @Override public void onInterrupt() { sounds.error(); speak("Đã tạm dừng"); }
+    private void playFocus() { if (sounds != null) sounds.focus(); }
+    private void playSwipe() { if (sounds != null) sounds.swipe(); }
+    private void playActivate() { if (sounds != null) sounds.activate(); }
+    private void playError() { if (sounds != null) sounds.error(); }
+
+    @Override public void onInterrupt() { playError(); speak("Đã tạm dừng"); }
 
     @Override public void onDestroy() {
+        handler.removeCallbacksAndMessages(null);
         replaceHovered(null);
         if (sounds != null) { sounds.release(); sounds = null; }
         if (tts != null) { tts.stop(); tts.shutdown(); tts = null; }
