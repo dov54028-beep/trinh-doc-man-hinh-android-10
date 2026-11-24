@@ -5,6 +5,7 @@ import android.accessibilityservice.AccessibilityServiceInfo;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
+import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import java.util.Locale;
@@ -71,8 +72,8 @@ public class ScreenReaderService extends AccessibilityService {
     }
 
     @Override public boolean onGesture(int gestureId) {
-        if (gestureId == GESTURE_SWIPE_LEFT) { moveFocus(AccessibilityNodeInfo.FOCUS_FORWARD); return true; }
-        if (gestureId == GESTURE_SWIPE_RIGHT) { moveFocus(AccessibilityNodeInfo.FOCUS_BACKWARD); return true; }
+        if (gestureId == GESTURE_SWIPE_LEFT) { moveFocus(View.FOCUS_FORWARD); return true; }
+        if (gestureId == GESTURE_SWIPE_RIGHT) { moveFocus(View.FOCUS_BACKWARD); return true; }
         return super.onGesture(gestureId);
     }
 
