@@ -1,5 +1,6 @@
 package com.vuong.reader;
 
+import com.vuong.reader.android10.BuildConfig;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
