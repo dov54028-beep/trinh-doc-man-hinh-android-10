@@ -8,6 +8,11 @@ import android.speech.tts.TextToSpeech;
 import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
+import android.graphics.Rect;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 
 /** Independent Android 10 screen reader core for the 0.2 milestone. */
@@ -117,10 +122,10 @@ public class ScreenReaderService extends AccessibilityService {
 
     @Override public boolean onGesture(int gestureId) {
         if (gestureId == GESTURE_SWIPE_LEFT) {
-            sounds.swipe(); moveFocus(View.FOCUS_FORWARD); return true;
+            sounds.swipe(); moveFocus(View.FOCUS_BACKWARD); return true;
         }
         if (gestureId == GESTURE_SWIPE_RIGHT) {
-            sounds.swipe(); moveFocus(View.FOCUS_BACKWARD); return true;
+            sounds.swipe(); moveFocus(View.FOCUS_FORWARD); return true;
         }
         if (gestureId == GESTURE_SWIPE_UP) { sounds.swipe(); scroll(true); return true; }
         if (gestureId == GESTURE_SWIPE_DOWN) { sounds.swipe(); scroll(false); return true; }
@@ -131,16 +136,87 @@ public class ScreenReaderService extends AccessibilityService {
         AccessibilityNodeInfo root = getRootInActiveWindow();
         if (root == null) { sounds.error(); return; }
         AccessibilityNodeInfo current = root.findFocus(AccessibilityNodeInfo.FOCUS_ACCESSIBILITY);
-        AccessibilityNodeInfo base = current == null ? root : current;
-        AccessibilityNodeInfo candidate = base.focusSearch(direction);
+        List<AccessibilityNodeInfo> nodes = new ArrayList<>();
+        collectReadableNodes(root, nodes, true);
+        Collections.sort(nodes, SCREEN_ORDER);
+
+        AccessibilityNodeInfo candidate = findOrderedCandidate(nodes, current, direction);
+        if (candidate == null) {
+            candidate = focusSearchFallback(root, current, direction);
+        }
         if (candidate != null && candidate.performAction(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS)) {
             sounds.focus();
-            CharSequence label = label(candidate);
-            if (label != null) speak(label.toString());
-            candidate.recycle();
+            CharSequence candidateLabel = label(candidate);
+            if (candidateLabel != null) speak(candidateLabel.toString());
+        } else if (!nodes.isEmpty()) {
+            scrollForMore(root, current, direction);
         } else sounds.error();
+
+        for (AccessibilityNodeInfo node : nodes) {
+            if (node != candidate) node.recycle();
+        }
+        if (candidate != null) candidate.recycle();
         if (current != null) current.recycle();
         root.recycle();
+    }
+
+    private void collectReadableNodes(AccessibilityNodeInfo node, List<AccessibilityNodeInfo> result, boolean isRoot) {
+        if (node == null) return;
+        if (!isRoot && node.isVisibleToUser() && label(node) != null
+                && (node.isFocusable() || node.isClickable() || node.isCheckable()
+                || node.getClassName() != null)) {
+            result.add(AccessibilityNodeInfo.obtain(node));
+        }
+        for (int i = 0; i < node.getChildCount(); i++) {
+            AccessibilityNodeInfo child = node.getChild(i);
+            collectReadableNodes(child, result, false);
+            if (child != null) child.recycle();
+        }
+    }
+
+    private static final Comparator<AccessibilityNodeInfo> SCREEN_ORDER = (a, b) -> {
+        Rect ra = new Rect();
+        Rect rb = new Rect();
+        a.getBoundsInScreen(ra);
+        b.getBoundsInScreen(rb);
+        if (ra.top != rb.top) return Integer.compare(ra.top, rb.top);
+        return Integer.compare(ra.left, rb.left);
+    };
+
+    private AccessibilityNodeInfo findOrderedCandidate(List<AccessibilityNodeInfo> nodes,
+                                                        AccessibilityNodeInfo current,
+                                                        int direction) {
+        if (nodes.isEmpty()) return null;
+        int currentIndex = -1;
+        for (int i = 0; i < nodes.size(); i++) {
+            if (current != null && sameNode(nodes.get(i), current)) { currentIndex = i; break; }
+        }
+        int nextIndex = direction == View.FOCUS_FORWARD ? currentIndex + 1 : currentIndex - 1;
+        if (currentIndex < 0) nextIndex = direction == View.FOCUS_FORWARD ? 0 : nodes.size() - 1;
+        return nextIndex >= 0 && nextIndex < nodes.size() ? nodes.get(nextIndex) : null;
+    }
+
+    private AccessibilityNodeInfo focusSearchFallback(AccessibilityNodeInfo root,
+                                                       AccessibilityNodeInfo current,
+                                                       int direction) {
+        AccessibilityNodeInfo base = current == null ? root : current;
+        AccessibilityNodeInfo result = base.focusSearch(direction);
+        return result == null ? null : AccessibilityNodeInfo.obtain(result);
+    }
+
+    private void scrollForMore(AccessibilityNodeInfo root, AccessibilityNodeInfo current, int direction) {
+        AccessibilityNodeInfo node = current == null ? root : current;
+        while (node != null && !node.isScrollable()) node = node.getParent();
+        boolean forward = direction == View.FOCUS_FORWARD;
+        boolean scrolled = node != null && node.performAction(forward
+                ? AccessibilityNodeInfo.ACTION_SCROLL_FORWARD : AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD);
+        if (scrolled) {
+            sounds.swipe();
+            handler.postDelayed(() -> moveFocus(direction), 350L);
+        } else {
+            sounds.error();
+            speak(forward ? "Đã tới mục cuối" : "Đã tới mục đầu");
+        }
     }
 
     private void scroll(boolean forward) {

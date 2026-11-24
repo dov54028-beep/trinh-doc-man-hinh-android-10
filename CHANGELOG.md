@@ -19,6 +19,7 @@
 - Thêm earcon cho focus, vuốt, kích hoạt và lỗi bằng `ToneGenerator` của Android.
 - Bổ sung đọc vai trò cơ bản, trạng thái đã chọn và trạng thái bị vô hiệu hóa.
 - Giữ màn hình cài đặt riêng, TTS hệ thống và target Android 10.
+- Bổ sung bản sửa điều hướng: sắp xếp các mục đọc được theo vị trí trên màn hình, dùng làm dự phòng khi `focusSearch()` không trả về mục kế tiếp và tự cuộn khi chạm biên vùng danh sách.
 
 ## Lộ trình tiếp theo
 
