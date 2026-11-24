@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Trình đọc màn hình Android 10</string>
+    <string name="service_name">Trình đọc màn hình Android 10</string>
+    <string name="service_description">Đọc nội dung màn hình và hỗ trợ điều hướng bằng cử chỉ.</string>
+    <string name="open_settings">Mở cài đặt Trình đọc màn hình</string>
+    <string name="open_accessibility">Mở trang bật dịch vụ Trợ năng</string>
+    <string name="status_off">Dịch vụ hiện đang tắt.</string>
+    <string name="status_on">Dịch vụ hiện đang bật.</string>
+    <string name="test_tts">Đọc thử bằng TTS</string>
+    <string name="back">Quay lại</string>
+    <string name="home">Trang chủ</string>
+    <string name="recents">Ứng dụng gần đây</string>
+    <string name="settings_title">Cài đặt trình đọc màn hình</string>
+    <string name="settings_info">Phiên bản 0.1.0 là nền móng độc lập. Các cử chỉ trái/phải, chạm khám phá và earcon sẽ được bổ sung từng bước.</string>
+</resources>
