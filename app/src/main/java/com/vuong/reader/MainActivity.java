@@ -11,7 +11,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public class MainActivity extends Activity {
-    private static final int CURRENT_VERSION_CODE = 3;
+    private static final int CURRENT_VERSION_CODE = 4;
     private TextView status;
     private TextView updateStatus;
     private Button downloadUpdate;
@@ -41,6 +41,10 @@ public class MainActivity extends Activity {
         test.setText(R.string.test_tts);
         test.setOnClickListener(v -> ScreenReaderService.speakFromTest("Đây là bản thử nghiệm của trình đọc màn hình Android 10."));
         root.addView(test);
+        Button repeat = new Button(this);
+        repeat.setText(R.string.repeat_current);
+        repeat.setOnClickListener(v -> ScreenReaderService.repeatCurrent());
+        root.addView(repeat);
         updateStatus = new TextView(this);
         updateStatus.setText(R.string.update_checking);
         updateStatus.setTextSize(16);

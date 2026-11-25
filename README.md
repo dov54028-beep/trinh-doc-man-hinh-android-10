@@ -2,9 +2,9 @@
 
 Đây là phiên bản thử nghiệm đầu tiên của một trình đọc màn hình viết mới bằng Java, không dùng lõi TalkBack. Mục tiêu là kiểm soát rõ ràng luồng khởi động, màn hình cài đặt và tương thích Android 10.
 
-## Phiên bản 0.3.0
+## Phiên bản 0.3.1
 
-Bản 0.3 tiếp tục lõi độc lập, củng cố vòng đời node cho Android 10, bảo vệ recycle node, bổ sung fallback điều hướng theo vị trí màn hình, xử lý biên danh sách và kiểm tra bản cập nhật online. Bản 0.2 cung cấp TTS hệ thống, đọc nhãn/trạng thái, điều hướng trái/phải, cuộn lên/xuống, chạm khám phá, nhấn hai lần và earcon.
+Bản 0.3.1 tiếp tục lõi độc lập, củng cố vòng đời node cho Android 10, bảo vệ recycle node, bổ sung fallback điều hướng theo vị trí màn hình, xử lý biên danh sách, kiểm tra cập nhật online, nút đọc lại mục gần nhất, công tắc earcon và chế độ đọc ngắn gọn. Bản 0.2 cung cấp TTS hệ thống, đọc nhãn/trạng thái, điều hướng trái/phải, cuộn lên/xuống, chạm khám phá, nhấn hai lần và earcon.
 
 Không nên coi bản 0.1.0 là bản thay thế hoàn chỉnh TalkBack. Trình đọc màn hình hoàn chỉnh cần xử lý rất nhiều loại cây giao diện và thiết bị.
 
@@ -26,7 +26,8 @@ Các hướng mở rộng hợp lý là bộ điều hướng theo vai trò (nú
 2. Mở biểu tượng **Trình đọc màn hình Android 10**.
 3. Nhấn **Mở cài đặt Trình đọc màn hình** để xem cài đặt riêng.
 4. Vào **Cài đặt Android → Trợ năng → Ứng dụng đã cài đặt** và bật dịch vụ.
-5. Quay lại ứng dụng để kiểm tra TTS và trạng thái dịch vụ.
+5. Trong cài đặt riêng, có thể tắt earcon hoặc bật đọc ngắn gọn; nút **Đọc lại mục hiện tại** ở màn hình chính đọc lại nội dung gần nhất.
+6. Quay lại ứng dụng để kiểm tra TTS và trạng thái dịch vụ.
 
 ## Build
 

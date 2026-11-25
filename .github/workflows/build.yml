@@ -40,7 +40,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tag="v0.3.0-build.${GITHUB_RUN_NUMBER}"
+          tag="v0.3.1-build.${GITHUB_RUN_NUMBER}"
           gh release create "$tag" app/build/outputs/apk/debug/app-debug.apk \
             --title "Trình đọc màn hình Android 10 $tag" \
             --notes-file CHANGELOG.md

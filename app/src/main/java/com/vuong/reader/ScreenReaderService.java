@@ -31,6 +31,8 @@ public class ScreenReaderService extends AccessibilityService {
     private long lastSpokenAt;
 
     @Override public void onServiceConnected() {
+        if (sounds != null) sounds.release();
+        if (tts != null) { tts.stop(); tts.shutdown(); }
         instance = this;
         AccessibilityServiceInfo info = getServiceInfo();
         if (info == null) info = new AccessibilityServiceInfo();
@@ -349,15 +351,25 @@ public class ScreenReaderService extends AccessibilityService {
         replaceHovered(null);
         if (sounds != null) { sounds.release(); sounds = null; }
         if (tts != null) { tts.stop(); tts.shutdown(); tts = null; }
+        lastText = null;
         instance = null;
         super.onDestroy();
     }
 
     private void speak(String value) {
-        if (tts != null && value != null && value.length() > 0)
-            tts.speak(value, TextToSpeech.QUEUE_FLUSH, null, "reader");
+        if (tts == null || value == null || value.length() == 0) return;
+        String spoken = value;
+        if (getSharedPreferences("reader", MODE_PRIVATE).getBoolean("compactSpeech", false)) {
+            int comma = value.indexOf(',');
+            if (comma > 0) spoken = value.substring(0, comma);
+        }
+        tts.speak(spoken, TextToSpeech.QUEUE_FLUSH, null, "reader");
     }
 
     public static boolean isRunning() { return instance != null; }
     public static void speakFromTest(String value) { if (instance != null) instance.speak(value); }
+    public static void repeatCurrent() {
+        if (instance != null && instance.lastText != null && instance.lastText.length() > 0)
+            instance.speak(instance.lastText.toString());
+    }
 }

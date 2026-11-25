@@ -1,5 +1,12 @@
 # Nhật ký thay đổi
 
+## 0.3.1 - Sửa tương thích tổng thể
+
+- Giữ đúng quy ước bắt buộc: vuốt trái là mục trước, vuốt phải là mục tiếp theo; vuốt lên/xuống điều khiển cuộn.
+- Bảo vệ việc tái kết nối service để không giữ lại ToneGenerator hoặc TTS cũ.
+- Thêm nút đọc lại mục gần nhất, công tắc earcon và chế độ đọc ngắn gọn.
+- Dọn trạng thái focus và callback khi service bị hủy để giảm lỗi khi đổi ứng dụng hoặc đổi cửa sổ.
+
 ## 0.3.0 - Củng cố lõi và kiểm tra cập nhật
 
 - Bảo vệ vòng đời `AccessibilityNodeInfo`, tránh recycle trùng và recycle kết quả `focusSearch()` đúng cách.
