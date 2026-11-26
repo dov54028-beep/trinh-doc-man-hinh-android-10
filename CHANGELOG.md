@@ -1,5 +1,12 @@
 # Nhật ký thay đổi
 
+## 0.3.2 - Ổn định điều hướng đa ứng dụng
+
+- Nhận diện lại mục đang focus ổn định hơn khi danh sách động thay đổi vị trí nhưng giữ nguyên view ID.
+- Loại bớt container có mục con đã đọc được để vuốt trái/phải không dừng lặp ở các lớp giao diện trung gian.
+- Gộp callback tự cuộn khi vuốt nhanh, tránh xếp chồng nhiều lần điều hướng sau một lần cuộn.
+- Tự khôi phục và đọc lại accessibility focus sau khi ứng dụng đổi cửa sổ.
+
 ## 0.3.1 - Sửa tương thích tổng thể
 
 - Giữ đúng quy ước bắt buộc: vuốt trái là mục trước, vuốt phải là mục tiếp theo; vuốt lên/xuống điều khiển cuộn.

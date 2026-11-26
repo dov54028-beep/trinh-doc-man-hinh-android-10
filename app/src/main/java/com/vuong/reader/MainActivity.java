@@ -11,7 +11,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public class MainActivity extends Activity {
-    private static final int CURRENT_VERSION_CODE = 4;
+    private static final int CURRENT_VERSION_CODE = 5;
     private TextView status;
     private TextView updateStatus;
     private Button downloadUpdate;
