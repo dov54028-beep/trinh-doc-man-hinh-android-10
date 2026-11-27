@@ -190,8 +190,16 @@ public class ScreenReaderService extends AccessibilityService {
             collectReadableNodes(root, nodes, true, new HashSet<String>());
             Collections.sort(nodes, SCREEN_ORDER);
             AccessibilityNodeInfo candidate = findOrderedCandidate(nodes, current, direction);
-            if (candidate == null) candidate = focusSearchFallback(root, current, direction);
-            if (candidate != null && focusAndSpeak(candidate)) {
+            boolean focused = candidate != null && focusAndSpeak(candidate);
+            if (!focused && candidate != null) {
+                removeAndRecycleCandidate(nodes, candidate);
+                candidate = null;
+            }
+            if (!focused) {
+                candidate = focusSearchFallback(root, current, direction);
+                focused = candidate != null && focusAndSpeak(candidate);
+            }
+            if (focused) {
                 // Candidate is recycled below after the action is complete.
             } else if (!nodes.isEmpty()) {
                 scrollForMore(root, current, direction);
@@ -199,17 +207,18 @@ public class ScreenReaderService extends AccessibilityService {
                 playError();
                 speak(direction == View.FOCUS_FORWARD ? "Không có mục tiếp theo" : "Không có mục trước");
             }
-            if (candidate != null) {
-                boolean ownedByList = false;
-                for (AccessibilityNodeInfo node : nodes) if (node == candidate) { ownedByList = true; break; }
-                if (ownedByList) nodes.remove(candidate);
-                candidate.recycle();
-            }
+            if (candidate != null) removeAndRecycleCandidate(nodes, candidate);
         } finally {
             for (AccessibilityNodeInfo node : nodes) node.recycle();
             if (current != null) current.recycle();
             root.recycle();
         }
+    }
+
+    private void removeAndRecycleCandidate(List<AccessibilityNodeInfo> nodes,
+                                            AccessibilityNodeInfo candidate) {
+        nodes.remove(candidate);
+        candidate.recycle();
     }
 
     private boolean focusAndSpeak(AccessibilityNodeInfo candidate) {
@@ -285,6 +294,10 @@ public class ScreenReaderService extends AccessibilityService {
         AccessibilityNodeInfo base = current == null ? root : current;
         AccessibilityNodeInfo result = base.focusSearch(direction);
         if (result == null) return null;
+        if (current != null && sameNode(result, current)) {
+            result.recycle();
+            return null;
+        }
         AccessibilityNodeInfo copy = AccessibilityNodeInfo.obtain(result);
         result.recycle();
         return copy;

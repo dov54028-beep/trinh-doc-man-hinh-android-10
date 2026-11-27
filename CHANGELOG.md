@@ -1,5 +1,11 @@
 # Nhật ký thay đổi
 
+## 0.3.3 - Fallback focus chính xác hơn
+
+- Nếu mục theo thứ tự màn hình không nhận accessibility focus, thử `focusSearch()` trước khi cuộn.
+- Bỏ qua kết quả `focusSearch()` trỏ lại chính mục hiện tại để tránh vuốt nhưng không chuyển mục.
+- Tiếp tục bảo đảm candidate được recycle đúng một lần dù đến từ danh sách sắp xếp hoặc fallback.
+
 ## 0.3.2 - Ổn định điều hướng đa ứng dụng
 
 - Nhận diện lại mục đang focus ổn định hơn khi danh sách động thay đổi vị trí nhưng giữ nguyên view ID.
