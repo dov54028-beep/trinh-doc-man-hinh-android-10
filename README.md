@@ -2,9 +2,9 @@
 
 Đây là phiên bản thử nghiệm đầu tiên của một trình đọc màn hình viết mới bằng Java, không dùng lõi TalkBack. Mục tiêu là kiểm soát rõ ràng luồng khởi động, màn hình cài đặt và tương thích Android 10.
 
-## Phiên bản 0.3.1
+## Phiên bản 0.3.3
 
-Bản 0.3.1 tiếp tục lõi độc lập, củng cố vòng đời node cho Android 10, bảo vệ recycle node, bổ sung fallback điều hướng theo vị trí màn hình, xử lý biên danh sách, kiểm tra cập nhật online, nút đọc lại mục gần nhất, công tắc earcon và chế độ đọc ngắn gọn. Bản 0.2 cung cấp TTS hệ thống, đọc nhãn/trạng thái, điều hướng trái/phải, cuộn lên/xuống, chạm khám phá, nhấn hai lần và earcon.
+Bản 0.3.3 tiếp tục lõi độc lập, củng cố vòng đời node cho Android 10, bảo vệ recycle node, bổ sung fallback điều hướng theo vị trí màn hình và `focusSearch()`, xử lý biên danh sách, kiểm tra cập nhật online, nút đọc lại mục gần nhất, công tắc earcon và chế độ đọc ngắn gọn. Bản 0.2 cung cấp TTS hệ thống, đọc nhãn/trạng thái, điều hướng trái/phải, cuộn lên/xuống, chạm khám phá, nhấn hai lần và earcon.
 
 Không nên coi bản 0.1.0 là bản thay thế hoàn chỉnh TalkBack. Trình đọc màn hình hoàn chỉnh cần xử lý rất nhiều loại cây giao diện và thiết bị.
 
@@ -15,6 +15,16 @@ Khi dịch vụ được bật, vuốt trái/phải sẽ chuyển accessibility 
 Vuốt trái là mục trước; vuốt phải là mục tiếp theo. Vuốt lên yêu cầu cuộn xuống và vuốt xuống yêu cầu cuộn lên. Khi `focusSearch()` của ứng dụng không hoạt động, service thu thập mục nhìn thấy, sắp xếp theo tọa độ trên màn hình và dùng đó làm đường dự phòng.
 
 Đây vẫn là bản độc lập đang phát triển. Ứng dụng tùy biến, game canvas hoặc giao diện không cung cấp `AccessibilityNodeInfo` có thể cần bộ thích nghi riêng.
+
+## Tương thích Android 10 và Android mới
+
+- `minSdk 26`: Android 8.0 trở lên, bao gồm Android 10.
+- `compileSdk 36`: mã nguồn được biên dịch với bộ SDK mới để có thể kiểm tra Android hiện đại.
+- `targetSdk 30`: giữ hành vi ổn định cho Android 10 trong giai đoạn lõi cử chỉ còn đang hoàn thiện; không tự ý nâng target chỉ vì compile SDK mới hơn.
+- Mã nguồn Java tránh gọi API mới trực tiếp trong đường chạy Android 10. Khi bổ sung API mới, cần đặt kiểm tra `Build.VERSION.SDK_INT` và giữ đường fallback cũ.
+- Giao diện trợ năng dựa trên API chuẩn `AccessibilityService` và `AccessibilityNodeInfo`, không phụ thuộc lõi TalkBack, nên cùng một APK có thể chạy trên Android 10 và Android mới trong giới hạn node mà từng ứng dụng cung cấp.
+
+Repository đã đặt công khai để người dùng không cần đăng nhập GitHub khi kiểm tra cập nhật hoặc tải APK. Release hiện tại: [v0.3.3-build.29](https://github.com/dov54028-beep/trinh-doc-man-hinh-android-10/releases/tag/v0.3.3-build.29).
 
 ## Ý tưởng đã tự chọn cho các bản sau
 
