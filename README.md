@@ -24,11 +24,11 @@ Vuốt trái là mục trước; vuốt phải là mục tiếp theo. Vuốt lê
 - Mã nguồn Java tránh gọi API mới trực tiếp trong đường chạy Android 10. Khi bổ sung API mới, cần đặt kiểm tra `Build.VERSION.SDK_INT` và giữ đường fallback cũ.
 - Giao diện trợ năng dựa trên API chuẩn `AccessibilityService` và `AccessibilityNodeInfo`, không phụ thuộc lõi TalkBack, nên cùng một APK có thể chạy trên Android 10 và Android mới trong giới hạn node mà từng ứng dụng cung cấp.
 
-Repository đã đặt công khai để người dùng không cần đăng nhập GitHub khi kiểm tra cập nhật hoặc tải APK. Release 0.4.2 sẽ được liên kết vào ReaderHub sau khi GitHub Actions tạo Release APK công khai.
+Repository đã đặt công khai để người dùng không cần đăng nhập GitHub khi kiểm tra cập nhật hoặc tải APK. Release 0.4.2 đã được liên kết vào ReaderHub; update checker có thể lấy metadata và APK công khai mà không cần đăng nhập GitHub.
 
 ## Ý tưởng đã tự chọn cho các bản sau
 
-Các hướng mở rộng hợp lý là bộ điều hướng theo vai trò (nút, tiêu đề, liên kết, ô nhập), đọc trạng thái tiến độ và thông báo ngắn, lịch sử focus để quay lại mục vừa đọc, chế độ đọc liên tục có dừng bằng chạm, bộ lọc thông báo theo ứng dụng, thao tác tùy biến trong màn hình cài đặt và báo cáo lỗi ẩn danh chỉ khi người dùng chủ động bật. Những tính năng này sẽ được thêm sau khi nền cử chỉ ổn định; không coi chúng là đã hoàn thành trong 0.3.
+Các hướng mở rộng hợp lý là bộ điều hướng theo vai trò (nút, tiêu đề, liên kết, ô nhập), đọc trạng thái tiến độ và thông báo ngắn, lịch sử focus để quay lại mục vừa đọc, chế độ đọc liên tục có dừng bằng chạm, bộ lọc thông báo theo ứng dụng, thao tác tùy biến trong màn hình cài đặt và báo cáo lỗi ẩn danh chỉ khi người dùng chủ động bật. Những tính năng này sẽ được thêm sau khi nền cử chỉ ổn định; không coi chúng là đã hoàn thành trong 0.4.2. Khả năng tương thích rộng vẫn phụ thuộc vào việc từng ứng dụng cung cấp cây trợ năng hợp lệ và cần được xác nhận thêm trên thiết bị Android thật.
 
 ## Cài đặt và bật
 

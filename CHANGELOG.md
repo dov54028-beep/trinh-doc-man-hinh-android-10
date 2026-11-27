@@ -7,6 +7,16 @@
 - ReaderHub mở rộng với chat polling, hiện diện online, cấm/gỡ cấm theo hạn, audit log và reset mật khẩu bằng token một lần.
 - Không gửi mật khẩu rõ hoặc password hash; reset token hết hạn và hủy các phiên cũ sau khi sử dụng.
 
+## Lộ trình sau 0.4.2
+
+- Điều hướng theo vai trò: tiêu đề, nút, liên kết, ô nhập liệu, hộp kiểm và thanh trượt.
+- Chế độ đọc liên tục có nút dừng, đọc lại mục hiện tại và lịch sử focus để quay về mục vừa đọc.
+- Bộ lọc thông báo theo ứng dụng, tùy chỉnh gesture/earcon và tùy chọn mức độ chi tiết của TTS.
+- Cải thiện bảng, WebView và giao diện Jetpack Compose khi ứng dụng cung cấp đủ node trợ năng.
+- Thêm chẩn đoán lỗi không chứa dữ liệu nhạy cảm và chỉ gửi khi người dùng chủ động bật.
+
+Các mục trên là kế hoạch, chưa được coi là đã hoàn thành hoặc đã kiểm thử trên thiết bị Android thật.
+
 ## 0.4.1 - Ổn định cử chỉ và đọc vai trò
 
 - Thêm chống gọi lặp cử chỉ trong khoảng thời gian quá ngắn để vuốt nhanh không nhảy qua nhiều mục ngoài ý muốn.
