@@ -24,7 +24,7 @@ Vuốt trái là mục trước; vuốt phải là mục tiếp theo. Vuốt lê
 - Mã nguồn Java tránh gọi API mới trực tiếp trong đường chạy Android 10. Khi bổ sung API mới, cần đặt kiểm tra `Build.VERSION.SDK_INT` và giữ đường fallback cũ.
 - Giao diện trợ năng dựa trên API chuẩn `AccessibilityService` và `AccessibilityNodeInfo`, không phụ thuộc lõi TalkBack, nên cùng một APK có thể chạy trên Android 10 và Android mới trong giới hạn node mà từng ứng dụng cung cấp.
 
-Repository đã đặt công khai để người dùng không cần đăng nhập GitHub khi kiểm tra cập nhật hoặc tải APK. Release trước đó: [v0.3.3-build.29](https://github.com/dov54028-beep/trinh-doc-man-hinh-android-10/releases/tag/v0.3.3-build.29). Bản 0.4.0 sẽ được liên kết vào ReaderHub sau khi GitHub Actions tạo Release APK công khai.
+Repository đã đặt công khai để người dùng không cần đăng nhập GitHub khi kiểm tra cập nhật hoặc tải APK. Release hiện tại: [v0.4.1-build.34](https://github.com/dov54028-beep/trinh-doc-man-hinh-android-10/releases/tag/v0.4.1-build.34). SHA-256 APK: `5401856845ad4d80fc21523e5339b064e4a1ee8777854c3f161176989ba41af3`.
 
 ## Ý tưởng đã tự chọn cho các bản sau
 
