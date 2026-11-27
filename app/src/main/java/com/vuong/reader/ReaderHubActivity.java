@@ -1,6 +1,8 @@
 package com.vuong.reader;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -77,6 +79,10 @@ public class ReaderHubActivity extends Activity {
         accountStatus = text("Đã kết nối máy chủ", 16);
         root.addView(accountStatus);
         root.addView(text("Tên: " + user.username + "\nEmail: " + user.email + "\nVai trò: " + roleLabel(user.role), 16));
+        root.addView(text("Mã thiết bị: " + client.getDeviceId(), 13));
+        Button dashboard = button("Mở bảng điều khiển ReaderHub đầy đủ");
+        dashboard.setOnClickListener(v -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.readerhub_base_url)))));
+        root.addView(dashboard);
         Button logout = button("Đăng xuất ReaderHub");
         logout.setOnClickListener(v -> client.logout((ok, error) -> showAuth()));
         root.addView(logout);

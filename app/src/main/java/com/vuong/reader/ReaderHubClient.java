@@ -3,6 +3,7 @@ package com.vuong.reader;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.Settings;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -25,10 +26,13 @@ public final class ReaderHubClient {
     private static final String TOKEN = "token";
     private final Context context;
     private final String baseUrl;
+    private final String deviceId;
 
     public ReaderHubClient(Context context) {
         this.context = context.getApplicationContext();
         this.baseUrl = this.context.getString(R.string.readerhub_base_url).trim();
+        String androidId = Settings.Secure.getString(this.context.getContentResolver(), Settings.Secure.ANDROID_ID);
+        this.deviceId = androidId == null || androidId.length() == 0 ? "unknown-device" : androidId;
     }
 
     public static final class User {
@@ -97,6 +101,7 @@ public final class ReaderHubClient {
     }
 
     public boolean hasToken() { return !token().isEmpty(); }
+    public String getDeviceId() { return deviceId; }
 
     private void accountRequest(String path, String username, String email, String password, Callback<User> callback) {
         JSONObject payload = new JSONObject();
@@ -104,6 +109,7 @@ public final class ReaderHubClient {
             payload.put("username", username);
             if (!email.isEmpty()) payload.put("email", email);
             payload.put("password", password);
+            payload.put("deviceId", deviceId);
         } catch (Exception e) { callback.onResult(null, "Không tạo được yêu cầu."); return; }
         request("POST", path, payload, (body, error) -> {
             if (error != null) { callback.onResult(null, error); return; }

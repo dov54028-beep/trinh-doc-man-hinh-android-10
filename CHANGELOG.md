@@ -1,5 +1,12 @@
 # Nhật ký thay đổi
 
+## 0.4.2 - Truy cập đầy đủ ReaderHub
+
+- Màn hình tài khoản hiển thị mã thiết bị Android hiện tại và có nút mở bảng điều khiển ReaderHub đầy đủ.
+- Gửi mã thiết bị qua HTTPS khi đăng nhập để server có thể áp dụng lệnh cấm theo thiết bị.
+- ReaderHub mở rộng với chat polling, hiện diện online, cấm/gỡ cấm theo hạn, audit log và reset mật khẩu bằng token một lần.
+- Không gửi mật khẩu rõ hoặc password hash; reset token hết hạn và hủy các phiên cũ sau khi sử dụng.
+
 ## 0.4.1 - Ổn định cử chỉ và đọc vai trò
 
 - Thêm chống gọi lặp cử chỉ trong khoảng thời gian quá ngắn để vuốt nhanh không nhảy qua nhiều mục ngoài ý muốn.

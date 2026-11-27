@@ -1,5 +1,5 @@
 plugins { id 'com.android.application' }
 
 android { namespace 'com.vuong.reader'; compileSdk 36
-    defaultConfig { applicationId 'com.vuong.reader.android10'; minSdk 26; targetSdk 30; versionCode 8; versionName '0.4.1' }
+    defaultConfig { applicationId 'com.vuong.reader.android10'; minSdk 26; targetSdk 30; versionCode 9; versionName '0.4.2' }
 }
