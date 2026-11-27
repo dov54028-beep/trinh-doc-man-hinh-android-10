@@ -20,6 +20,7 @@ import java.util.Set;
 /** Independent Android 10 screen reader core with defensive node handling. */
 public class ScreenReaderService extends AccessibilityService {
     private static final long DOUBLE_TAP_MS = 450L;
+    private static final long GESTURE_DEBOUNCE_MS = 160L;
     private static final long NAVIGATION_SCROLL_DELAY_MS = 350L;
     private static ScreenReaderService instance;
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -29,7 +30,9 @@ public class ScreenReaderService extends AccessibilityService {
     private long lastHoverAt;
     private CharSequence lastText;
     private long lastSpokenAt;
+    private long lastGestureAt;
     private boolean scrollPending;
+    private final Runnable restoreFocusRunnable = this::restoreFocusAfterWindowChange;
 
     @Override public void onServiceConnected() {
         if (sounds != null) sounds.release();
@@ -62,7 +65,8 @@ public class ScreenReaderService extends AccessibilityService {
         if (type == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             replaceHovered(null);
             lastText = null;
-            handler.postDelayed(this::restoreFocusAfterWindowChange, 250L);
+            handler.removeCallbacks(restoreFocusRunnable);
+            handler.postDelayed(restoreFocusRunnable, 250L);
         }
         if (type == AccessibilityEvent.TYPE_VIEW_HOVER_ENTER) {
             handleHover(event);
@@ -103,15 +107,13 @@ public class ScreenReaderService extends AccessibilityService {
     }
 
     private boolean isActivatable(AccessibilityNodeInfo node) {
-        return node.isClickable() || node.isFocusable() || node.isLongClickable()
-                || node.isCheckable() || node.isEditable();
+        return node.isClickable() || node.isCheckable() || node.isLongClickable();
     }
 
     private boolean sameNode(AccessibilityNodeInfo a, AccessibilityNodeInfo b) {
         if (a.getWindowId() != b.getWindowId()) return false;
         CharSequence aId = a.getViewIdResourceName();
         CharSequence bId = b.getViewIdResourceName();
-        if (aId != null && bId != null && aId.equals(bId)) return true;
         Rect aBounds = new Rect();
         Rect bBounds = new Rect();
         a.getBoundsInScreen(aBounds);
@@ -157,6 +159,9 @@ public class ScreenReaderService extends AccessibilityService {
     }
 
     @Override public boolean onGesture(int gestureId) {
+        long now = System.currentTimeMillis();
+        if (now - lastGestureAt < GESTURE_DEBOUNCE_MS) return true;
+        lastGestureAt = now;
         if (gestureId == GESTURE_SWIPE_LEFT) {
             playSwipe();
             moveFocus(View.FOCUS_BACKWARD);
@@ -187,7 +192,7 @@ public class ScreenReaderService extends AccessibilityService {
         List<AccessibilityNodeInfo> nodes = new ArrayList<>();
         try {
             current = root.findFocus(AccessibilityNodeInfo.FOCUS_ACCESSIBILITY);
-            collectReadableNodes(root, nodes, true, new HashSet<String>());
+            collectReadableNodes(root, nodes, true, new HashSet<String>(), false);
             Collections.sort(nodes, SCREEN_ORDER);
             AccessibilityNodeInfo candidate = findOrderedCandidate(nodes, current, direction);
             boolean focused = candidate != null && focusAndSpeak(candidate);
@@ -225,26 +230,32 @@ public class ScreenReaderService extends AccessibilityService {
         if (!candidate.performAction(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS)) return false;
         playFocus();
         CharSequence candidateLabel = label(candidate);
-        if (candidateLabel != null) speak(candidateLabel.toString());
+        if (candidateLabel != null && shouldSpeak(candidateLabel)) speak(candidateLabel.toString());
         return true;
     }
 
     private void collectReadableNodes(AccessibilityNodeInfo node, List<AccessibilityNodeInfo> result,
-                                      boolean isRoot, Set<String> seen) {
+                                      boolean isRoot, Set<String> seen, boolean insideActionable) {
         if (node == null) return;
+        boolean actionable = isActionable(node);
         if (!isRoot && node.isVisibleToUser()) {
             CharSequence nodeLabel = label(node);
             String key = nodeKey(node, nodeLabel);
-            if (nodeLabel != null && isNavigableNode(node) && seen.add(key))
+            if (nodeLabel != null && isNavigableNode(node)
+                    && (!insideActionable || actionable) && seen.add(key))
                 result.add(AccessibilityNodeInfo.obtain(node));
         }
         for (int i = 0; i < node.getChildCount(); i++) {
             AccessibilityNodeInfo child = node.getChild(i);
             if (child != null) {
-                collectReadableNodes(child, result, false, seen);
+                collectReadableNodes(child, result, false, seen, insideActionable || actionable);
                 child.recycle();
             }
         }
+    }
+
+    private boolean isActionable(AccessibilityNodeInfo node) {
+        return node.isClickable() || node.isCheckable() || node.isLongClickable() || node.isEditable();
     }
 
     private boolean isNavigableNode(AccessibilityNodeInfo node) {
@@ -366,9 +377,24 @@ public class ScreenReaderService extends AccessibilityService {
         }
         if (result == null || result.length() == 0) return null;
         StringBuilder output = new StringBuilder(result.toString());
+        String role = roleDescription(node);
+        if (role != null && output.indexOf(role) < 0) output.append(", ").append(role);
         if (node.isChecked()) output.append(", đã chọn");
         if (!node.isEnabled()) output.append(", bị vô hiệu hóa");
         return output.toString();
+    }
+
+    private String roleDescription(AccessibilityNodeInfo node) {
+        String className = node.getClassName() == null ? "" : node.getClassName().toString();
+        if (className.contains("Button")) return "nút";
+        if (className.contains("EditText")) return "ô nhập liệu";
+        if (className.contains("CheckBox")) return "hộp kiểm";
+        if (className.contains("Switch")) return "công tắc";
+        if (className.contains("RadioButton")) return "nút chọn";
+        if (className.contains("SeekBar")) return "thanh trượt";
+        if (className.contains("RecyclerView")) return "danh sách";
+        if (className.contains("WebView")) return "trang web";
+        return null;
     }
 
     private void replaceHovered(AccessibilityNodeInfo replacement) {
@@ -390,6 +416,7 @@ public class ScreenReaderService extends AccessibilityService {
         if (sounds != null) { sounds.release(); sounds = null; }
         if (tts != null) { tts.stop(); tts.shutdown(); tts = null; }
         lastText = null;
+        lastGestureAt = 0L;
         instance = null;
         super.onDestroy();
     }

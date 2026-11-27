@@ -1,5 +1,14 @@
 # Nhật ký thay đổi
 
+## 0.4.1 - Ổn định cử chỉ và đọc vai trò
+
+- Thêm chống gọi lặp cử chỉ trong khoảng thời gian quá ngắn để vuốt nhanh không nhảy qua nhiều mục ngoài ý muốn.
+- Cải thiện nhận diện node động: không coi hai node chỉ vì trùng view ID là cùng một mục nếu vị trí đã thay đổi.
+- Bỏ bớt nhãn con bị lặp bên trong card hoặc hàng bấm được, nhưng vẫn giữ các điều khiển con có thể thao tác.
+- Không coi mọi node chỉ `focusable` là nút kích hoạt; giảm trường hợp chạm hai lần gây thao tác sai.
+- Đọc rõ vai trò cơ bản như nút, ô nhập liệu, hộp kiểm, công tắc, thanh trượt, danh sách và trang web.
+- Gộp callback khôi phục focus khi đổi cửa sổ và chống lặp TTS khi điều hướng.
+
 ## 0.4.0 - Kết nối ReaderHub trong ứng dụng
 
 - Thêm màn hình tài khoản ReaderHub ngay trong APK, gồm đăng ký, đăng nhập, đăng xuất và khôi phục phiên bằng token phiên đã lưu cục bộ.

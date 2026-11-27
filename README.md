@@ -2,9 +2,9 @@
 
 Đây là phiên bản thử nghiệm đầu tiên của một trình đọc màn hình viết mới bằng Java, không dùng lõi TalkBack. Mục tiêu là kiểm soát rõ ràng luồng khởi động, màn hình cài đặt và tương thích Android 10.
 
-## Phiên bản 0.4.0
+## Phiên bản 0.4.1
 
-Bản 0.4.0 tiếp tục các sửa ổn định của 0.3.3 và tích hợp màn hình tài khoản ReaderHub ngay trong APK. Người dùng có thể đăng ký, đăng nhập, đăng xuất và xem vai trò; tài khoản quản trị có thể xem danh sách người dùng, còn nhà phát triển gốc có thể thăng chức hoặc hạ chức quản trị viên. Bản 0.2 cung cấp TTS hệ thống, đọc nhãn/trạng thái, điều hướng trái/phải, cuộn lên/xuống, chạm khám phá, nhấn hai lần và earcon.
+Bản 0.4.1 tiếp tục các sửa ổn định của 0.3.3, tích hợp màn hình tài khoản ReaderHub ngay trong APK và củng cố lõi cử chỉ. Vuốt trái vẫn là mục trước, vuốt phải là mục tiếp theo; callback lặp bị chống, node động được nhận diện thận trọng hơn, nhãn con trùng trong card được giảm bớt và vai trò điều khiển được đọc rõ hơn. Người dùng có thể đăng ký, đăng nhập, đăng xuất và xem vai trò; tài khoản quản trị có thể xem danh sách người dùng, còn nhà phát triển gốc có thể thăng chức hoặc hạ chức quản trị viên.
 
 Không nên coi bản 0.1.0 là bản thay thế hoàn chỉnh TalkBack. Trình đọc màn hình hoàn chỉnh cần xử lý rất nhiều loại cây giao diện và thiết bị.
 
