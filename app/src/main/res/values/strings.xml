@@ -4,6 +4,7 @@
     <string name="service_description">Đọc nội dung màn hình và hỗ trợ điều hướng bằng cử chỉ.</string>
     <string name="open_settings">Mở cài đặt Trình đọc màn hình</string>
     <string name="open_accessibility">Mở trang bật dịch vụ Trợ năng</string>
+    <string name="open_readerhub">Mở tài khoản và quản trị ReaderHub</string>
     <string name="status_off">Dịch vụ hiện đang tắt.</string>
     <string name="status_on">Dịch vụ hiện đang bật.</string>
     <string name="test_tts">Đọc thử bằng TTS</string>
@@ -20,4 +21,5 @@
     <string name="update_latest">Bạn đang dùng bản mới nhất.</string>
     <string name="update_available">Có bản cập nhật %1$s.</string>
     <string name="update_unavailable">Chưa kết nối được máy chủ cập nhật.</string>
+    <string name="readerhub_base_url">https://readerhub-gjanmfcw.manus.space</string>
 </resources>

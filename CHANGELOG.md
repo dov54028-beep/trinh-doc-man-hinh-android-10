@@ -1,5 +1,12 @@
 # Nhật ký thay đổi
 
+## 0.4.0 - Kết nối ReaderHub trong ứng dụng
+
+- Thêm màn hình tài khoản ReaderHub ngay trong APK, gồm đăng ký, đăng nhập, đăng xuất và khôi phục phiên bằng token phiên đã lưu cục bộ.
+- Hiển thị vai trò tài khoản; quản trị viên có thể xem danh sách tài khoản, còn nhà phát triển gốc có thể thăng chức hoặc hạ chức quản trị viên.
+- Thêm API HTTPS dành cho Android, không gửi mật khẩu về lại ứng dụng và không đưa password hash ra ngoài máy chủ.
+- Giữ nguyên lõi AccessibilityService, cử chỉ bắt buộc và target SDK 30 để không làm thay đổi đường chạy Android 10.
+
 ## 0.3.3 - Fallback focus chính xác hơn
 
 - Nếu mục theo thứ tự màn hình không nhận accessibility focus, thử `focusSearch()` trước khi cuộn.

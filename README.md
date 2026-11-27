@@ -2,9 +2,9 @@
 
 Đây là phiên bản thử nghiệm đầu tiên của một trình đọc màn hình viết mới bằng Java, không dùng lõi TalkBack. Mục tiêu là kiểm soát rõ ràng luồng khởi động, màn hình cài đặt và tương thích Android 10.
 
-## Phiên bản 0.3.3
+## Phiên bản 0.4.0
 
-Bản 0.3.3 tiếp tục lõi độc lập, củng cố vòng đời node cho Android 10, bảo vệ recycle node, bổ sung fallback điều hướng theo vị trí màn hình và `focusSearch()`, xử lý biên danh sách, kiểm tra cập nhật online, nút đọc lại mục gần nhất, công tắc earcon và chế độ đọc ngắn gọn. Bản 0.2 cung cấp TTS hệ thống, đọc nhãn/trạng thái, điều hướng trái/phải, cuộn lên/xuống, chạm khám phá, nhấn hai lần và earcon.
+Bản 0.4.0 tiếp tục các sửa ổn định của 0.3.3 và tích hợp màn hình tài khoản ReaderHub ngay trong APK. Người dùng có thể đăng ký, đăng nhập, đăng xuất và xem vai trò; tài khoản quản trị có thể xem danh sách người dùng, còn nhà phát triển gốc có thể thăng chức hoặc hạ chức quản trị viên. Bản 0.2 cung cấp TTS hệ thống, đọc nhãn/trạng thái, điều hướng trái/phải, cuộn lên/xuống, chạm khám phá, nhấn hai lần và earcon.
 
 Không nên coi bản 0.1.0 là bản thay thế hoàn chỉnh TalkBack. Trình đọc màn hình hoàn chỉnh cần xử lý rất nhiều loại cây giao diện và thiết bị.
 
@@ -24,7 +24,7 @@ Vuốt trái là mục trước; vuốt phải là mục tiếp theo. Vuốt lê
 - Mã nguồn Java tránh gọi API mới trực tiếp trong đường chạy Android 10. Khi bổ sung API mới, cần đặt kiểm tra `Build.VERSION.SDK_INT` và giữ đường fallback cũ.
 - Giao diện trợ năng dựa trên API chuẩn `AccessibilityService` và `AccessibilityNodeInfo`, không phụ thuộc lõi TalkBack, nên cùng một APK có thể chạy trên Android 10 và Android mới trong giới hạn node mà từng ứng dụng cung cấp.
 
-Repository đã đặt công khai để người dùng không cần đăng nhập GitHub khi kiểm tra cập nhật hoặc tải APK. Release hiện tại: [v0.3.3-build.29](https://github.com/dov54028-beep/trinh-doc-man-hinh-android-10/releases/tag/v0.3.3-build.29).
+Repository đã đặt công khai để người dùng không cần đăng nhập GitHub khi kiểm tra cập nhật hoặc tải APK. Release trước đó: [v0.3.3-build.29](https://github.com/dov54028-beep/trinh-doc-man-hinh-android-10/releases/tag/v0.3.3-build.29). Bản 0.4.0 sẽ được liên kết vào ReaderHub sau khi GitHub Actions tạo Release APK công khai.
 
 ## Ý tưởng đã tự chọn cho các bản sau
 

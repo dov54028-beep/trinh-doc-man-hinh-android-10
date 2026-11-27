@@ -11,7 +11,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public class MainActivity extends Activity {
-    private static final int CURRENT_VERSION_CODE = 6;
+    private static final int CURRENT_VERSION_CODE = 7;
     private TextView status;
     private TextView updateStatus;
     private Button downloadUpdate;
@@ -37,6 +37,10 @@ public class MainActivity extends Activity {
         accessibility.setText(R.string.open_accessibility);
         accessibility.setOnClickListener(v -> startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)));
         root.addView(accessibility);
+        Button readerHub = new Button(this);
+        readerHub.setText(R.string.open_readerhub);
+        readerHub.setOnClickListener(v -> startActivity(new Intent(this, ReaderHubActivity.class)));
+        root.addView(readerHub);
         Button test = new Button(this);
         test.setText(R.string.test_tts);
         test.setOnClickListener(v -> ScreenReaderService.speakFromTest("Đây là bản thử nghiệm của trình đọc màn hình Android 10."));
